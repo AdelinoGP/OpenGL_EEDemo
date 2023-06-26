@@ -101,7 +101,7 @@ public:
         }
 
         if (currentTick == 1000)
-            cout << "Valor maximo de ticks excedido" << endl;
+            cout << "Numero maximo de ticks excedido" << endl;
 
         return currentSimulatedValues = simulatedValues;
     }
@@ -155,17 +155,29 @@ void ChangeSize(GLsizei w, GLsizei h) {
         gluOrtho2D(0, XDMAX * w / h, 0, YDMAX);
 }
 
-void SpecialKeyEvent(int tecla, int xmouse, int ymouse) {
-    switch (tecla) {
-    case GLUT_KEY_UP:
-        break;
+void KeyEvent(unsigned char tecla, int xmouse, int ymouse) {
+    if (tecla == 'q' || tecla == 'Q') controllerPtr->desiredValue++;
 
-    case GLUT_KEY_DOWN:
-        break;
+    if (tecla == 'w' || tecla == 'W') controllerPtr->desiredValue--;
 
-    case GLUT_KEY_END:
-        break;
-    }
+    if (tecla == 'a' || tecla == 'A') controllerPtr->initialValue++;
+
+    if (tecla == 's' || tecla == 'S') controllerPtr->initialValue--;
+
+    if (tecla == 'r' || tecla == 'R') controllerPtr->Kp+= 0.05;
+
+    if (tecla == 't' || tecla == 'T') controllerPtr->Kp-= 0.05;
+
+    if (tecla == 'f' || tecla == 'F') controllerPtr->Ki+= 0.05;
+
+    if (tecla == 'g' || tecla == 'G') controllerPtr->Ki-= 0.05;
+
+    if (tecla == 'v' || tecla == 'V') controllerPtr->Kd+= 0.05;
+
+    if (tecla == 'b' || tecla == 'B') controllerPtr->Kd-= 0.05;
+
+    controllerPtr->SimulateTillDesired();
+
     glutPostRedisplay();
 }
 
@@ -284,7 +296,7 @@ int main(int argc, char** argv) {
 
     //Callbacks
     glutDisplayFunc(RenderScene);
-    glutSpecialFunc(SpecialKeyEvent);
+    glutKeyboardFunc(KeyEvent);
     glutReshapeFunc(ChangeSize);
 
     //Entrar no loop principal do Glut
