@@ -4,6 +4,7 @@
 #include <corecrt_math.h>
 #include <corecrt_math_defines.h>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <list>
 #include <functional>
@@ -218,33 +219,59 @@ void RenderBackGround() {
 
     glEnable(GL_LINE_STIPPLE);
     glBegin(GL_LINE_STRIP);
-    glVertex2f((XDMAX / 3) + 10, 10);
-    glVertex2f((XDMAX / 3) + 10, YDMAX / 2);
-    glVertex2f(XDMAX * 2 - XDMAX / 3, YDMAX / 2);
-    glVertex2f((XDMAX / 3) + 10, YDMAX / 2);
-    glVertex2f((XDMAX / 3) + 10, YDMAX - 10);
+        glVertex2f((XDMAX / 3) + 80, 10);
+        glVertex2f((XDMAX / 3) + 80, YDMAX - 10);
     glEnd();
     glDisable(GL_LINE_STIPPLE);
 }
 
 void RenderSimulatedValues(PIDController* pidController) {
+    Vector2 initialPoint = Vector2((XDMAX / 3) + 82, 0);
+    int valuesSize = pidController->currentSimulatedValues.size();
+    float desiredValue = pidController->desiredValue;
+    float initialValue = pidController->initialValue + pidController->zoomValue;
+    float maxShownValue = desiredValue * 2 - pidController->zoomValue;
+    float desiredValuePosition = normalizeFloat(initialValue, maxShownValue, desiredValue) * YDMAX;
+
+    glLineStipple(1, 10);
+    glColor3f(1, 0.5f, 0);
+    glLineWidth(3);
+
+    glEnable(GL_LINE_STIPPLE);
+    glBegin(GL_LINE_STRIP);
+        glVertex2f((XDMAX / 3) + 80, desiredValuePosition);
+        glVertex2f(XDMAX, desiredValuePosition);
+    glEnd();
+    glDisable(GL_LINE_STIPPLE);
+
     glColor3f(0, 0.5f, 1);
     glLineWidth(4);
-
-    Vector2 initialPoint = Vector2((XDMAX / 3) + 11, 0);
     glBegin(GL_LINE_STRIP);
-    int valuesSize = pidController->currentSimulatedValues.size();
-    float initialValue = pidController->initialValue;
-    float desiredValue = pidController->desiredValue * 2;
-
     for (Vector2 vec : pidController->currentSimulatedValues) {
-        glVertex2f(initialPoint.x + (normalizeFloat(0, valuesSize, vec.x) * XDMAX), normalizeFloat(initialValue, desiredValue, vec.y) * YDMAX);
+        glVertex2f(initialPoint.x + (normalizeFloat(0, valuesSize, vec.x) * (XDMAX)), normalizeFloat(initialValue, maxShownValue, vec.y) * YDMAX);
 
-        if (DEBUG_MODE) cout << "Valor x: " << initialPoint.x + (normalizeFloat(0, valuesSize, vec.x) * XDMAX) << " Valor Y: " << normalizeFloat(pidController->initialValue, pidController->desiredValue, vec.y) * YDMAX << endl;
+        if (DEBUG_MODE) cout << "Valor x: " << initialPoint.x + (normalizeFloat(0, valuesSize, vec.x) * XDMAX) << " Valor Y: " << normalizeFloat(initialValue, maxShownValue, vec.y) * YDMAX << endl;
     }
-
     glEnd();
 
+    ostringstream ss;
+    ss.setf(ios::fixed);
+    ss << setprecision(2) << initialValue;
+    RenderString(initialPoint.x, 10, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), white);
+    ss.str("");
+    ss.clear();
+
+    ss.setf(ios::fixed);
+    ss << setprecision(2) << maxShownValue;
+    RenderString(initialPoint.x, YDMAX - 25, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), white);
+    ss.str("");
+    ss.clear();
+
+    ss.setf(ios::fixed);
+    ss << setprecision(2) << desiredValue;
+    RenderString(initialPoint.x, normalizeFloat(initialValue, maxShownValue, desiredValue) * YDMAX, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), white);
+    ss.str("");
+    ss.clear();
 }
 
 void RenderControlElement(Vector2 position, const char* titleString, const char* valueString) {
