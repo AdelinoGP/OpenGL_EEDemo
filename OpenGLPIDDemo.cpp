@@ -87,13 +87,15 @@ public:
     list<Vector2> SimulateTillDesired() {
         if(DEBUG_MODE) cout << "Valor Inicial: "<< initialValue << " Valor desejado: "<< desiredValue << endl;
 
+        cumulative_error = 0;
+        previous_error = 0;
         currentTick = 0;
         currentValue = initialValue;
 
         list<Vector2> simulatedValues = { Vector2(currentTick,currentValue) };
 
         int ticksWhereEqual = 0;
-        while (ticksWhereEqual < 10 && currentTick < 1000) {
+        while (ticksWhereEqual < 10 && currentTick < 10000) {
             SimulateTick();
             simulatedValues.emplace_back(Vector2(currentTick, currentValue));
             float difference = desiredValue - currentValue;
@@ -101,7 +103,7 @@ public:
                 ticksWhereEqual++;
         }
 
-        if (currentTick == 1000)
+        if (currentTick == 10000)
             cout << "Numero maximo de ticks excedido" << endl;
 
         return currentSimulatedValues = simulatedValues;
@@ -167,13 +169,13 @@ void KeyEvent(unsigned char tecla, int xmouse, int ymouse) {
 
     if (tecla == 't' || tecla == 'T') controllerPtr->Kp-= 0.05;
 
-    if (tecla == 'f' || tecla == 'F') controllerPtr->Ki+= 0.05;
+    if (tecla == 'f' || tecla == 'F') controllerPtr->Ki+= 0.025;
 
-    if (tecla == 'g' || tecla == 'G') controllerPtr->Ki-= 0.05;
+    if (tecla == 'g' || tecla == 'G') controllerPtr->Ki-= 0.025;
 
-    if (tecla == 'v' || tecla == 'V') controllerPtr->Kd+= 0.05;
+    if (tecla == 'v' || tecla == 'V') controllerPtr->Kd+= 0.025;
 
-    if (tecla == 'b' || tecla == 'B') controllerPtr->Kd-= 0.05;
+    if (tecla == 'b' || tecla == 'B') controllerPtr->Kd-= 0.025;
 
     controllerPtr->SimulateTillDesired();
 
@@ -253,33 +255,34 @@ void RenderControlElement(Vector2 position, const char* titleString, const char*
 void RenderControls(PIDController* pidController) {
     Vector2 elementPosition = Vector2(30, YDMAX - 30);
     ostringstream ss;
+    ss.setf(ios::fixed);
 
-    ss << "Q+  " << pidController->desiredValue << "  -W";
+    ss << setprecision(2) << "Q+  " << pidController->desiredValue << "  -W";
     RenderControlElement(elementPosition, "Valor Desejado:", ss.str().c_str());
     elementPosition.y -= 60;
     ss.str("");
     ss.clear();
 
-    ss << "A+  " << pidController->initialValue << "  -S";
+    ss << setprecision(2) << "A+  " << pidController->initialValue << "  -S";
     RenderControlElement(elementPosition, "Valor Inicial:", ss.str().c_str());
     elementPosition.y -= 60;
     ss.str("");
     ss.clear();
 
-    ss << "R+  " << pidController->Kp << "  -T";
-    RenderControlElement(elementPosition, "Fator P:", ss.str().c_str());
+    ss << setprecision(2) << "R+  " << pidController->Kp << "  -T";
+    RenderControlElement(elementPosition, "Fator Proporcional:", ss.str().c_str());
     elementPosition.y -= 60;
     ss.str("");
     ss.clear();
 
-    ss << "F+  " << pidController->Ki << "  -G";
-    RenderControlElement(elementPosition, "Fator I:", ss.str().c_str());
+    ss << setprecision(3) << "F+  " << pidController->Ki << "  -G";
+    RenderControlElement(elementPosition, "Fator Integral:", ss.str().c_str());
     elementPosition.y -= 60;
     ss.str("");
     ss.clear();
 
-    ss << "V+  " << pidController->Kd << "  -B";
-    RenderControlElement(elementPosition, "Fator D:", ss.str().c_str());
+    ss << setprecision(3) << "V+  " << pidController->Kd << "  -B";
+    RenderControlElement(elementPosition, "Fator Derivativo:", ss.str().c_str());
     elementPosition.y -= 60;
     ss.str("");
     ss.clear();
