@@ -73,6 +73,7 @@ public:
     float desiredValue = 30;
 
     float currentTick;
+    float zoomValue = 0;
 
     float cumulative_error = 0;
     float previous_error = 0;
@@ -141,8 +142,6 @@ float normalizeFloat(float initialValue, float endValue, float current) {
     return  (current - initialValue) / (endValue - initialValue);
 }
 
-
-
 void ChangeSize(GLsizei w, GLsizei h) {
     if (h == 0)
         h = 1;
@@ -178,6 +177,23 @@ void KeyEvent(unsigned char tecla, int xmouse, int ymouse) {
 
     controllerPtr->SimulateTillDesired();
 
+    glutPostRedisplay();
+}
+void MouseEvent(int button, int state, int x, int y)
+{
+    if (state == GLUT_UP) return;
+
+    float minValue = controllerPtr->initialValue + controllerPtr->zoomValue;
+    float maxValue = controllerPtr->desiredValue * 2 - controllerPtr->zoomValue;
+
+            
+    if (button == 3) { // Scroll Up
+        if (maxValue - minValue < 2) return;
+        controllerPtr->zoomValue += 0.5;
+    }
+    if (button == 4) { // Scroll Down
+        controllerPtr->zoomValue -= 0.5;
+    }
     glutPostRedisplay();
 }
 
@@ -298,6 +314,7 @@ int main(int argc, char** argv) {
     glutDisplayFunc(RenderScene);
     glutKeyboardFunc(KeyEvent);
     glutReshapeFunc(ChangeSize);
+    glutMouseFunc(MouseEvent);
 
     //Entrar no loop principal do Glut
     glutMainLoop();
