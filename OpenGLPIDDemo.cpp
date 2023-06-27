@@ -240,7 +240,7 @@ void RenderSimulatedValues(PIDController* pidController) {
     glEnable(GL_LINE_STIPPLE);
     glBegin(GL_LINE_STRIP);
         glVertex2f((XDMAX / 3) + 80, desiredValuePosition);
-        glVertex2f(XDMAX, desiredValuePosition);
+        glVertex2f(XDMAX * 1.4, desiredValuePosition);
     glEnd();
     glDisable(GL_LINE_STIPPLE);
 
